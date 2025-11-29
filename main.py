@@ -9,13 +9,18 @@ st.markdown("---")
 st.header("입력")
 col1, col2 = st.columns(2)
 
+# Streamlit 세션 상태를 사용하여 연산 선택 값 추적
+if 'operation' not in st.session_state:
+    st.session_state.operation = "선택하세요"
+
 with col1:
     # 첫 번째 숫자 입력
     num1 = st.number_input("첫 번째 숫자 (x)를 입력하세요:", value=0.0, format="%f")
 
 with col2:
     # 두 번째 숫자 입력 (로그 연산을 위해 0보다 큰 값만 허용)
-    if st.session_state.get('operation') in ['로그 연산 (log_b x)']:
+    if st.session_state.operation == '로그 연산 (log_b x)':
+        # 밑(base)은 0보다 크고 1이 아니어야 함을 명시
         num2 = st.number_input("밑 (b, 0보다 크고 1이 아닌 값)을 입력하세요:", value=10.0, min_value=0.0000001, format="%f")
     else:
         num2 = st.number_input("두 번째 숫자 (y)를 입력하세요:", value=0.0, format="%f")
@@ -31,17 +36,14 @@ operation_options = [
     "지수 연산 (x^y)",
     "로그 연산 (log_b x)"
 ]
+# key='operation'을 사용하여 세션 상태에 저장 및 업데이트
 operation = st.selectbox("수행할 연산을 선택하세요:", operation_options, key='operation')
 
 # 계산 로직을 수행하는 함수
 def calculate(num1, num2, operation):
     """선택된 연산을 수행하고 결과를 반환합니다."""
     
-    # 지수 및 로그 연산을 위한 'math' 모듈의 함수들입니다.
-    # 
-
-[Image of scientific calculator functions]
-
+    # ⚠️ 이전 오류 코드였던 '' 텍스트가 제거되었습니다.
     
     if operation == "덧셈 (+)":
         return num1 + num2, f"{num1} + {num2}"
@@ -56,11 +58,13 @@ def calculate(num1, num2, operation):
     elif operation == "모듈러 연산 (%)":
         if num2 == 0:
             return "오류: 0으로 나눌 수 없습니다.", "모듈러 연산"
+        # Python의 % 연산자는 부동 소수점에도 작동하지만, 일반적으로 정수 연산으로 사용됨
         return num1 % num2, f"{num1} % {num2}"
     elif operation == "지수 연산 (x^y)":
         return num1 ** num2, f"{num1}^{num2}"
     elif operation == "로그 연산 (log_b x)":
-        if num1 <= 0 or num2 <= 0 or num2 == 1:
+        # 로그 정의: x > 0, b > 0, b != 1
+        if num1 <= 0 or num2 <= 0 or abs(num2 - 1.0) < 1e-9: # 1.0과 매우 가까운 값도 오류 처리
             return "오류: 로그 연산의 정의를 확인하세요. x > 0, b > 0, b != 1", "로그 연산"
         try:
             # math.log(x, base) 사용
@@ -90,7 +94,5 @@ if st.button("계산하기"):
             st.balloons() # 계산 성공 시 풍선 효과 추가
             
             # 소수점 10자리까지 포맷팅하여 표시
+            # 지수(로그) 연산 결과는 소수점이 길 수 있으므로 10자리 포맷 유지
             st.markdown(f"## **결과: `{result:.10f}`**")
-
-# 로그인을 위한 Streamlit 튜토리얼 영상이 포함된 검색 결과입니다.
-Building A Calculator with Streamlit Components and HTML
